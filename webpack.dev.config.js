@@ -1,24 +1,44 @@
 const path = require("path");
 
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const HtmlWebpackRootPlugin  = require("html-webpack-root-plugin");
+
 module.exports = {
 	mode: "development",
+	devtool: "source-map",
 	entry: [
-		"./static/jsx/App.jsx"
+		"./src/jsx/App.jsx"
 	],
 	output: {
-		path: path.resolve(__dirname),
-		filename: "static/bundle.js"
+		path: path.resolve(__dirname, "dist"),
+		filename: "bundle.js"
 	},
-	devtool: "source-map",
 	module: {
 		rules: [
 			{
 				test: /\.jsx$/,
-				include: path.resolve(__dirname, "static/jsx"),
+				include: path.resolve(__dirname, "src/jsx"),
 				use: {
 					loader: "babel-loader"
 				}
+			},
+			{
+				test: /\.(svg|png|jpg)$/,
+				include: path.resolve(__dirname, "src/img"),
+				use: [
+					"file-loader"
+				]
 			}
 		]
-	}
+	},
+	plugins: [
+		new HtmlWebpackPlugin({
+			title: "react-redux-sketch",
+			favicon: "src/img/favicon.png",
+			meta: {
+				charset: "UTF-8"
+			}
+		}),
+		new HtmlWebpackRootPlugin("app")
+	]
 };

@@ -1,3 +1,5 @@
+import React from "react" // we need this import in every jsx module
+
 import {combineReducers, createStore, applyMiddleware} from "redux"
 import thunk from "redux-thunk"
 import {render} from "react-dom"
@@ -14,5 +16,5 @@ render(
 	<Provider store={store}>
 		<NotesPage />
 	</Provider>,
-	document.getElementById("root")
+	document.getElementById("app")
 )

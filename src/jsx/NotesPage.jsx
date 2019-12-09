@@ -1,3 +1,5 @@
+import React from "react" // we need this import in every jsx module
+
 import {connect} from "react-redux"
 
 // action types
@@ -225,7 +227,7 @@ export default function reducer(state = default_state, action) {
 		case OPEN_NOTE:
 			return {
 				...state,
-				note: id === 0 ?
+				note: action.id === 0 ?
 					{...default_note, id: 0, ts: new Date().getTime()} :
 					{...state.notes.find((note) => note.id === action.id)}
 			}
@@ -242,7 +244,9 @@ export default function reducer(state = default_state, action) {
 		case NOTE_SAVED:
 			return {
 				...state,
-				notes: [...state.notes, action.note]
+				notes: state.notes.find((note) => note.id === action.note.id) ?
+					state.notes.map(note => note.id === action.note.id ? action.note : note) :
+					[...state.notes, action.note]
 			}
 		case NOTE_REMOVED:
 			return {
@@ -260,8 +264,8 @@ const WaitView = connect(
 	// mapping functions (redux store state -> react component props)
 	(state) => {
 		return {
-			wait: state.wait,
-			req_key: state.req_key
+			wait: state.notes_page.wait,
+			req_key: state.notes_page.req_key
 		}
 	},
 	(dispatch) => {
@@ -282,7 +286,7 @@ const WaitView = connect(
 const ErrorView = connect(
 	(state) => {
 		return {
-			error: state.error
+			error: state.notes_page.error
 		}
 	},
 	(dispatch) => {
@@ -323,7 +327,7 @@ const Note = connect(
 const NotesView = connect(
 	(state) => {
 		return {
-			notes: state.notes
+			notes: state.notes_page.notes
 		}
 	},
 	(dispatch) => {
@@ -344,7 +348,7 @@ const NotesView = connect(
 const NoteView = connect(
 	(state) => {
 		return {
-			note: state.note
+			note: state.notes_page.note
 		}
 	},
 	(dispatch) => {
@@ -359,7 +363,7 @@ const NoteView = connect(
 	}
 )(({note, onSaveNoteClick, onCloseNoteClick}) => (
 	<div>
-		<div>{new Date(ts).toLocaleDateString()}</div>
+		<div>{new Date(note.ts).toLocaleDateString()}</div>
 		<input value={note.title} />
 		<input value={note.text} />
 		<button onClick={() => onSaveNoteClick(note)}>Save</button>
@@ -370,9 +374,9 @@ const NoteView = connect(
 export const NotesPage = connect(
 	(state) => {
 		return {
-			wait: state.wait,
-			error: state.error,
-			note: state.note
+			wait: state.notes_page.wait,
+			error: state.notes_page.error,
+			note: state.notes_page.note
 		}
 	}
 )(({wait, error, note}) => (
