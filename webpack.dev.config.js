@@ -1,7 +1,8 @@
-const path = require("path");
+const path = require("path")
 
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-const HtmlWebpackRootPlugin  = require("html-webpack-root-plugin");
+const HtmlWebpackPlugin = require("html-webpack-plugin")
+const HtmlWebpackRootPlugin  = require("html-webpack-root-plugin")
+const CopyPlugin = require("copy-webpack-plugin")
 
 module.exports = {
 	mode: "development",
@@ -39,6 +40,9 @@ module.exports = {
 				charset: "UTF-8"
 			}
 		}),
-		new HtmlWebpackRootPlugin("app")
+		new HtmlWebpackRootPlugin("app"),
+		new CopyPlugin([
+			"./src/server.js"
+		])
 	]
-};
+}

@@ -40,13 +40,14 @@ function close_note() {
 	return {type: CLOSE_NOTE}
 }
 
+const base_url = "http://127.0.0.1:3000"
 let requests_count = 0
 let requests = {}
 
 function abort_req(req_key, message) {
 	let request = requests[req_key]
 	if (request) {
-		request.promise.reject(message)
+		//request.promise.reject(message)
 		request.controller.abort()
 		delete requests[req_key]
 	}
@@ -68,7 +69,7 @@ function send_req(url, options, timeout = 5000) {
 }
 
 function abort(req_key) { // async action creator
-	return (dispatch) => { // async action
+	return dispatch => { // async action
 		abort_req(req_key, "aborted")
 	}
 }
@@ -78,9 +79,9 @@ function notes_loaded(notes) {
 }
 
 function load_notes() {
-	return (dispatch) => {
+	return dispatch => {
 		const {req_key, promise} = send_req(
-			"http://127.0.0.1/load_notes",
+			base_url + "/load_notes",
 			{
 				method: "POST"
 			}
@@ -108,9 +109,9 @@ function note_saved(note) {
 }
 
 function save_note(note) {
-	return (dispatch) => {
+	return dispatch => {
 		const {req_key, promise} = send_req(
-			"http://127.0.0.1/save_note",
+			base_url + "/save_note",
 			{
 				method: "POST",
 				headers: {
@@ -143,9 +144,9 @@ function note_removed(id) {
 }
 
 function remove_note(id) {
-	return (dispatch) => {
+	return dispatch => {
 		const {req_key, promise} = send_req(
-			"http://127.0.0.1/remove_note",
+			base_url + "/remove_note",
 			{
 				method: "POST",
 				headers: {
@@ -194,8 +195,8 @@ const default_state = {
 }
 
 const default_note = {
-	title: "Title",
-	text: "Text"
+	title: "title",
+	text: "text"
 }
 
 // reducer
@@ -229,7 +230,7 @@ export default function reducer(state = default_state, action) {
 				...state,
 				note: action.id === 0 ?
 					{...default_note, id: 0, ts: new Date().getTime()} :
-					{...state.notes.find((note) => note.id === action.id)}
+					{...state.notes.find(note => note.id === action.id)}
 			}
 		case CLOSE_NOTE:
 			return {
@@ -244,14 +245,14 @@ export default function reducer(state = default_state, action) {
 		case NOTE_SAVED:
 			return {
 				...state,
-				notes: state.notes.find((note) => note.id === action.note.id) ?
+				notes: state.notes.find(note => note.id === action.note.id) ?
 					state.notes.map(note => note.id === action.note.id ? action.note : note) :
 					[...state.notes, action.note]
 			}
 		case NOTE_REMOVED:
 			return {
 				...state,
-				notes: state.notes.filter((note) => note.id !== action.id)
+				notes: state.notes.filter(note => note.id !== action.id)
 			}
 		default:
 			return state
@@ -262,17 +263,15 @@ export default function reducer(state = default_state, action) {
 
 const WaitView = connect(
 	// mapping functions (redux store state -> react component props)
-	(state) => {
+	state => {
 		return {
 			wait: state.notes_page.wait,
 			req_key: state.notes_page.req_key
 		}
 	},
-	(dispatch) => {
+	dispatch => {
 		return {
-			onAbortClick: (req_key) => {
-				dispatch(abort(req_key))
-			}
+			onAbortClick: req_key => dispatch(abort(req_key))
 		}
 	}
 )(({wait, req_key, onAbortClick}) => (
@@ -284,16 +283,14 @@ const WaitView = connect(
 ))
 
 const ErrorView = connect(
-	(state) => {
+	state => {
 		return {
 			error: state.notes_page.error
 		}
 	},
-	(dispatch) => {
+	dispatch => {
 		return {
-			onClearErrorClick: () => {
-				dispatch(clear_error())
-			}
+			onClearErrorClick: () => dispatch(clear_error())
 		}
 	}
 )(({error, onClearErrorClick}) => (
@@ -305,14 +302,10 @@ const ErrorView = connect(
 
 const Note = connect(
 	null,
-	(dispatch) => {
+	dispatch => {
 		return {
-			onEditNoteClick: (id) => {
-				dispatch(open_note(id))
-			},
-			onRemoveNoteClick: (id) => {
-				dispatch(remove_note(id))
-			}
+			onEditNoteClick: id => dispatch(open_note(id)),
+			onRemoveNoteClick: id => dispatch(remove_note(id))
 		}
 	}
 )(({id, ts, title, onEditNoteClick, onRemoveNoteClick}) => (
@@ -325,16 +318,14 @@ const Note = connect(
 ))
 
 const NotesView = connect(
-	(state) => {
+	state => {
 		return {
 			notes: state.notes_page.notes
 		}
 	},
-	(dispatch) => {
+	dispatch => {
 		return {
-			onCreateNoteClick: () => {
-				dispatch(open_note(0))
-			}
+			onCreateNoteClick: () => dispatch(open_note(0))
 		}
 	}
 )(({notes, onCreateNoteClick}) => (
@@ -346,19 +337,15 @@ const NotesView = connect(
 ))
 
 const NoteView = connect(
-	(state) => {
+	state => {
 		return {
 			note: state.notes_page.note
 		}
 	},
-	(dispatch) => {
+	dispatch => {
 		return {
-			onSaveNoteClick: (note) => {
-				dispatch(save_note(note))
-			},
-			onCloseNoteClick: () => {
-				dispatch(close_note())
-			}
+			onSaveNoteClick: note => dispatch(save_note(note)),
+			onCloseNoteClick: () => dispatch(close_note())
 		}
 	}
 )(({note, onSaveNoteClick, onCloseNoteClick}) => (
@@ -372,7 +359,7 @@ const NoteView = connect(
 ))
 
 export const NotesPage = connect(
-	(state) => {
+	state => {
 		return {
 			wait: state.notes_page.wait,
 			error: state.notes_page.error,
