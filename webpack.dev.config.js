@@ -19,9 +19,9 @@ module.exports = {
 			{
 				test: /\.jsx$/,
 				include: path.resolve(__dirname, "src/jsx"),
-				use: {
-					loader: "babel-loader"
-				}
+				use: [
+					"babel-loader"
+				]
 			},
 			{
 				test: /\.(svg|png|jpg)$/,

@@ -21,16 +21,17 @@ let notes = [
 let note_id = 3
 
 const request_handler = (request, response) => {
-	let body = ""
+	let body = []
 
 	request.on("data", chunk => {
-		body += chunk
+		console.log("chunk: " + chunk.toString())
+		body.push(chunk)
 	})
 
 	request.on("end", () => {
-		let pathname = url.parse(request.url, true).pathname
-		console.log("pathname: " + pathname)
+		body = Buffer.concat(body).toString()
 		console.log("body: " + body)
+		let pathname = url.parse(request.url, true).pathname
 		if (pathname === "/load_notes") {
 			const res = {error: "", notes: notes}
 			response.writeHead(200)
@@ -38,14 +39,16 @@ const request_handler = (request, response) => {
 			response.end()
 		} else if (pathname === "/save_note") {
 			let res = {error: "unknown error"}
+			console.log("JSON.parse...")
 			let json = JSON.parse(body)
+			console.log("JSON.parse OK")
 			if (!json.id) {
 				json.id = note_id++
 				notes.push(json)
 				res.error = ""
 				res.id = json.id
 			} else {
-				const i = notes.findIndex(note => json.id)
+				const i = notes.findIndex(note => note.id === json.id)
 				if (i === -1) {
 					res.error = "bad id"
 				} else {
@@ -60,7 +63,7 @@ const request_handler = (request, response) => {
 		} else if (pathname === "/remove_note") {
 			let res = {error: "unknown error"}
 			const json = JSON.parse(body)
-			const i = notes.findIndex(note => json.id)
+			const i = notes.findIndex(note => note.id === json.id)
 			if (i === -1) {
 				res.error = "bad id"
 			} else {
@@ -74,7 +77,7 @@ const request_handler = (request, response) => {
 			if (pathname === "/") {
 				pathname = "/index.html"
 			}
-			fs.readFile(__dirname + pathname, "utf-8", (err, content) => {
+			fs.readFile(__dirname + pathname, (err, content) => {
 				if (err) {
 					response.writeHead(404)
 					response.write("Not Found")

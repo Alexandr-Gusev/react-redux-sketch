@@ -1,6 +1,7 @@
 import React from "react" // we need this import in every jsx module
 
 import {connect} from "react-redux"
+import fetch from "cross-fetch"
 
 // action types
 
@@ -45,20 +46,25 @@ let requests_count = 0
 let requests = {}
 
 function abort_req(req_key, message) {
-	let request = requests[req_key]
+	const request = requests[req_key]
 	if (request) {
-		//request.promise.reject(message)
+		request.reject(message)
 		request.controller.abort()
 		delete requests[req_key]
 	}
 }
 
 function send_req(url, options, timeout = 5000) {
-	let controller = new AbortController()
-	let promise = fetch(url, {...options, signal: controller.signal})
-	let req_key = "_" + requests_count
+	let request = {
+		controller: new AbortController()
+	}
+	const promise = new Promise((resolve, reject) => {
+		request.reject = reject
+		fetch(url, {...options, signal: request.controller.signal}).then(resolve, reject)
+	})
+	const req_key = "_" + requests_count
 	requests_count++
-	requests[req_key] = {controller, promise}
+	requests[req_key] = request
 	setTimeout(
 		() => {
 			abort_req(req_key, "timeout")
@@ -218,7 +224,7 @@ export default function reducer(state = default_state, action) {
 		case ERROR:
 			return {
 				...state,
-				error: action.message
+				error: action.message.toString()
 			}
 		case CLEAR_ERROR:
 			return {
@@ -310,8 +316,8 @@ const Note = connect(
 	}
 )(({id, ts, title, onEditNoteClick, onRemoveNoteClick}) => (
 	<div>
-		<div>{title}</div>
 		<div>{new Date(ts).toLocaleDateString()}</div>
+		<div>{title}</div>
 		<button onClick={() => onEditNoteClick(id)}>Edit</button>
 		<button onClick={() => onRemoveNoteClick(id)}>Remove</button>
 	</div>
@@ -351,8 +357,8 @@ const NoteView = connect(
 )(({note, onSaveNoteClick, onCloseNoteClick}) => (
 	<div>
 		<div>{new Date(note.ts).toLocaleDateString()}</div>
-		<input value={note.title} />
-		<input value={note.text} />
+		<div><input defaultValue={note.title} /></div>
+		<div><input defaultValue={note.text} /></div>
 		<button onClick={() => onSaveNoteClick(note)}>Save</button>
 		<button onClick={() => onCloseNoteClick()}>Close</button>
 	</div>
