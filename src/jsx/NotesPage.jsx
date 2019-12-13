@@ -1,4 +1,4 @@
-import React from "react" // we need this import in every jsx module
+import React, {useState} from "react" // we need import React in every jsx module
 
 import {connect} from "react-redux"
 import fetch from "cross-fetch"
@@ -41,7 +41,6 @@ function close_note() {
 	return {type: CLOSE_NOTE}
 }
 
-const base_url = "http://127.0.0.1:3000"
 let requests_count = 0
 let requests = {}
 
@@ -84,10 +83,10 @@ function notes_loaded(notes) {
 	return {type: NOTES_LOADED, notes}
 }
 
-function load_notes() {
+export function load_notes() {
 	return dispatch => {
 		const {req_key, promise} = send_req(
-			base_url + "/load_notes",
+			"/load_notes",
 			{
 				method: "POST"
 			}
@@ -117,7 +116,7 @@ function note_saved(note) {
 function save_note(note) {
 	return dispatch => {
 		const {req_key, promise} = send_req(
-			base_url + "/save_note",
+			"/save_note",
 			{
 				method: "POST",
 				headers: {
@@ -152,7 +151,7 @@ function note_removed(id) {
 function remove_note(id) {
 	return dispatch => {
 		const {req_key, promise} = send_req(
-			base_url + "/remove_note",
+			"/remove_note",
 			{
 				method: "POST",
 				headers: {
@@ -184,20 +183,8 @@ const default_state = {
 	req_key: undefined,
 	error: undefined,
 	note: undefined,
-	notes: [
-		{
-			id: 1,
-			ts: 1575329084642,
-			title: "t1",
-			text: "d1"
-		},
-		{
-			id: 2,
-			ts: 1575329084642,
-			title: "t2",
-			text: "d2"
-		}
-	]
+	notes_loaded: false,
+	notes: undefined
 }
 
 const default_note = {
@@ -246,6 +233,7 @@ export default function reducer(state = default_state, action) {
 		case NOTES_LOADED:
 			return {
 				...state,
+				notes_loaded: true,
 				notes: action.notes
 			}
 		case NOTE_SAVED:
@@ -316,10 +304,24 @@ const Note = connect(
 	}
 )(({id, ts, title, onEditNoteClick, onRemoveNoteClick}) => (
 	<div>
-		<div>{new Date(ts).toLocaleDateString()}</div>
+		<div>{new Date(ts).toLocaleString()}</div>
 		<div>{title}</div>
 		<button onClick={() => onEditNoteClick(id)}>Edit</button>
 		<button onClick={() => onRemoveNoteClick(id)}>Remove</button>
+	</div>
+))
+
+const LoadNotesView = connect(
+	null,
+	dispatch => {
+		return {
+			onLoadNotesClick: () => dispatch(load_notes())
+		}
+	}
+)(({onLoadNotesClick}) => (
+	<div>
+		<h1>Connection error</h1>
+		<button onClick={() => onLoadNotesClick()}>Load</button>
 	</div>
 ))
 
@@ -354,28 +356,35 @@ const NoteView = connect(
 			onCloseNoteClick: () => dispatch(close_note())
 		}
 	}
-)(({note, onSaveNoteClick, onCloseNoteClick}) => (
-	<div>
-		<div>{new Date(note.ts).toLocaleDateString()}</div>
-		<div><input defaultValue={note.title} /></div>
-		<div><input defaultValue={note.text} /></div>
-		<button onClick={() => onSaveNoteClick(note)}>Save</button>
-		<button onClick={() => onCloseNoteClick()}>Close</button>
-	</div>
-))
+)(({note, onSaveNoteClick, onCloseNoteClick}) => {
+	const [title, setTitle] = useState(note.title)
+	const [text, setText] = useState(note.text)
+	return (
+		<div>
+			<h1>Note</h1>
+			<div>{new Date(note.ts).toLocaleString()}</div>
+			<div><input defaultValue={title} onChange={e => setTitle(e.target.value)} /></div>
+			<div><input defaultValue={text} onChange={e => setText(e.target.value)} /></div>
+			<button onClick={() => onSaveNoteClick({...note, title, text})}>Save</button>
+			<button onClick={() => onCloseNoteClick()}>Close</button>
+		</div>
+	)
+})
 
 export const NotesPage = connect(
 	state => {
 		return {
 			wait: state.notes_page.wait,
 			error: state.notes_page.error,
-			note: state.notes_page.note
+			note: state.notes_page.note,
+			notes_loaded: state.notes_page.notes_loaded
 		}
 	}
-)(({wait, error, note}) => (
+)(({wait, error, note, notes_loaded}) => (
 	<div>
 		{wait !== undefined && <WaitView />}
 		{error !== undefined && <ErrorView />}
-		{note === undefined ? <NotesView /> : <NoteView />}
+		{wait === undefined && error === undefined && (
+			note !== undefined ? <NoteView /> : notes_loaded ? <NotesView /> : <LoadNotesView />)}
 	</div>
 ))

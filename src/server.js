@@ -24,14 +24,12 @@ const request_handler = (request, response) => {
 	let body = []
 
 	request.on("data", chunk => {
-		console.log("chunk: " + chunk.toString())
 		body.push(chunk)
 	})
 
 	request.on("end", () => {
-		body = Buffer.concat(body).toString()
-		console.log("body: " + body)
 		let pathname = url.parse(request.url, true).pathname
+		console.log(pathname)
 		if (pathname === "/load_notes") {
 			const res = {error: "", notes: notes}
 			response.writeHead(200)
@@ -39,9 +37,7 @@ const request_handler = (request, response) => {
 			response.end()
 		} else if (pathname === "/save_note") {
 			let res = {error: "unknown error"}
-			console.log("JSON.parse...")
 			let json = JSON.parse(body)
-			console.log("JSON.parse OK")
 			if (!json.id) {
 				json.id = note_id++
 				notes.push(json)
@@ -67,7 +63,7 @@ const request_handler = (request, response) => {
 			if (i === -1) {
 				res.error = "bad id"
 			} else {
-				delete notes[i]
+				notes.splice(i, 1)
 				res.error = ""
 			}
 			response.writeHead(200)
