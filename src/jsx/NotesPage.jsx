@@ -1,4 +1,4 @@
-import React, {useState} from "react" // we need import React in every jsx module
+import React, {useState, useEffect} from "react" // we need import React in every jsx module
 
 import {connect} from "react-redux"
 import fetch from "cross-fetch"
@@ -363,8 +363,8 @@ const NoteView = connect(
 		<div>
 			<h1>Note</h1>
 			<div>{new Date(note.ts).toLocaleString()}</div>
-			<div><input defaultValue={title} onChange={e => setTitle(e.target.value)} /></div>
-			<div><input defaultValue={text} onChange={e => setText(e.target.value)} /></div>
+			<div><input value={title} onChange={e => setTitle(e.target.value)} /></div>
+			<div><input value={text} onChange={e => setText(e.target.value)} /></div>
 			<button onClick={() => onSaveNoteClick({...note, title, text})}>Save</button>
 			<button onClick={() => onCloseNoteClick()}>Close</button>
 		</div>
@@ -379,12 +379,20 @@ export const NotesPage = connect(
 			note: state.notes_page.note,
 			notes_loaded: state.notes_page.notes_loaded
 		}
+	},
+	dispatch => {
+		return {
+			onNotesPageOpen: () => dispatch(load_notes())
+		}
 	}
-)(({wait, error, note, notes_loaded}) => (
-	<div>
-		{wait !== undefined && <WaitView />}
-		{error !== undefined && <ErrorView />}
-		{wait === undefined && error === undefined && (
-			note !== undefined ? <NoteView /> : notes_loaded ? <NotesView /> : <LoadNotesView />)}
-	</div>
-))
+)(({wait, error, note, notes_loaded, onNotesPageOpen}) => {
+	useEffect(() => onNotesPageOpen(), [])
+	return (
+		<div>
+			{wait !== undefined && <WaitView />}
+			{error !== undefined && <ErrorView />}
+			{wait === undefined && error === undefined && (
+				note !== undefined ? <NoteView /> : notes_loaded ? <NotesView /> : <LoadNotesView />)}
+		</div>
+	)
+})
