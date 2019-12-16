@@ -3,6 +3,13 @@ import React, {useState, useEffect} from "react" // we need import React in ever
 import {connect} from "react-redux"
 import fetch from "cross-fetch"
 
+import {
+	Typography,
+	Button,
+	TextField
+} from "@material-ui/core"
+import {createMuiTheme, ThemeProvider} from "@material-ui/core/styles"
+
 // action types
 
 const WAIT = "NotesPage/WAIT"
@@ -272,7 +279,7 @@ const WaitView = connect(
 	// presentational component
 	<div>
 		{wait}
-		<button onClick={() => onAbortClick(req_key)}>Abort</button>
+		<Button variant="contained" color="primary" onClick={() => onAbortClick(req_key)}>Abort</Button>
 	</div>
 ))
 
@@ -290,7 +297,7 @@ const ErrorView = connect(
 )(({error, onClearErrorClick}) => (
 	<div>
 		{error}
-		<button onClick={() => onClearErrorClick()}>OK</button>
+		<Button variant="contained" color="primary" onClick={() => onClearErrorClick()}>OK</Button>
 	</div>
 ))
 
@@ -306,8 +313,8 @@ const Note = connect(
 	<div>
 		<div>{new Date(ts).toLocaleString()}</div>
 		<div>{title}</div>
-		<button onClick={() => onEditNoteClick(id)}>Edit</button>
-		<button onClick={() => onRemoveNoteClick(id)}>Remove</button>
+		<Button variant="contained" color="primary" onClick={() => onEditNoteClick(id)}>Edit</Button>
+		<Button variant="contained" color="primary" onClick={() => onRemoveNoteClick(id)}>Remove</Button>
 	</div>
 ))
 
@@ -321,7 +328,7 @@ const LoadNotesView = connect(
 )(({onLoadNotesClick}) => (
 	<div>
 		<h1>Connection error</h1>
-		<button onClick={() => onLoadNotesClick()}>Load</button>
+		<Button variant="contained" color="primary" onClick={() => onLoadNotesClick()}>Load</Button>
 	</div>
 ))
 
@@ -340,7 +347,7 @@ const NotesView = connect(
 	<div>
 		<h1>Notes</h1>
 		{notes.map(note => <Note key={note.id} {...note} />)}
-		<button onClick={() => onCreateNoteClick()}>Create</button>
+		<Button variant="contained" color="primary" onClick={() => onCreateNoteClick()}>Create</Button>
 	</div>
 ))
 
@@ -363,10 +370,10 @@ const NoteView = connect(
 		<div>
 			<h1>Note</h1>
 			<div>{new Date(note.ts).toLocaleString()}</div>
-			<div><input value={title} onChange={e => setTitle(e.target.value)} /></div>
-			<div><input value={text} onChange={e => setText(e.target.value)} /></div>
-			<button onClick={() => onSaveNoteClick({...note, title, text})}>Save</button>
-			<button onClick={() => onCloseNoteClick()}>Close</button>
+			<div><TextField variant="outlined" value={title} onChange={e => setTitle(e.target.value)} /></div>
+			<div><TextField variant="outlined" value={text} onChange={e => setText(e.target.value)} /></div>
+			<Button variant="contained" color="primary" onClick={() => onSaveNoteClick({...note, title, text})}>Save</Button>
+			<Button variant="contained" color="primary" onClick={() => onCloseNoteClick()}>Close</Button>
 		</div>
 	)
 })
@@ -387,12 +394,43 @@ export const NotesPage = connect(
 	}
 )(({wait, error, note, notes_loaded, onNotesPageOpen}) => {
 	useEffect(() => onNotesPageOpen(), [])
+	const theme = createMuiTheme({
+		typography: {
+			"fontFamily": "\"Roboto\", \"Helvetica\", \"Arial\", sans-serif"
+		},
+		overrides: {
+			MuiButton: {
+				root: {
+					margin: "8px",
+				}
+			},
+			MuiOutlinedInput: {
+				root: {
+					margin: "8px"
+				},
+				input: {
+					padding: "8px"
+				}
+			}
+		}
+	})
 	return (
-		<div>
-			{wait !== undefined && <WaitView />}
-			{error !== undefined && <ErrorView />}
-			{wait === undefined && error === undefined && (
-				note !== undefined ? <NoteView /> : notes_loaded ? <NotesView /> : <LoadNotesView />)}
-		</div>
+		<ThemeProvider theme={theme}>
+			<Typography>
+				{wait !== undefined && <WaitView />}
+				{error !== undefined && <ErrorView />}
+				{
+					wait === undefined &&
+					error === undefined && (
+						note !== undefined ?
+							<NoteView /> :
+							notes_loaded ?
+								<NotesView /> :
+								<LoadNotesView />
+					)
+				}
+			</Typography>
+		</ThemeProvider>
 	)
 })
+
