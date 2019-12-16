@@ -416,7 +416,7 @@ export const NotesPage = connect(
 	})
 	return (
 		<ThemeProvider theme={theme}>
-			<Typography>
+			<Typography component="div">
 				{wait !== undefined && <WaitView />}
 				{error !== undefined && <ErrorView />}
 				{
