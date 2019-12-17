@@ -6,9 +6,53 @@ import fetch from "cross-fetch"
 import {
 	Typography,
 	Button,
-	TextField
+	TextField,
+	IconButton
 } from "@material-ui/core"
-import {createMuiTheme, ThemeProvider} from "@material-ui/core/styles"
+import EditIcon from "@material-ui/icons/Edit"
+import DeleteIcon from "@material-ui/icons/Delete"
+import {createMuiTheme, ThemeProvider, makeStyles} from "@material-ui/core/styles"
+
+// themes
+
+const main_theme = createMuiTheme({
+	palette: {
+		primary: {
+			main: "#468DBC"
+		}
+	},
+	overrides: {
+		MuiButton: {
+			root: {
+				margin: "8px",
+			}
+		},
+		MuiIconButton: {
+			root: {
+				margin: "8px",
+			}
+		},
+		MuiOutlinedInput: {
+			root: {
+				margin: "8px"
+			},
+			input: {
+				padding: "8px"
+			}
+		}
+	}
+})
+
+// styles
+
+const useStyles = makeStyles({
+	root: {
+		"fontFamily": "\"Roboto\", \"Helvetica\", \"Arial\", sans-serif"
+	},
+	pb8: {
+		paddingBottom: "8px"
+	}
+})
 
 // action types
 
@@ -309,14 +353,21 @@ const Note = connect(
 			onRemoveNoteClick: id => dispatch(remove_note(id))
 		}
 	}
-)(({id, ts, title, onEditNoteClick, onRemoveNoteClick}) => (
-	<div>
-		<div>{new Date(ts).toLocaleString()}</div>
-		<div>{title}</div>
-		<Button variant="contained" color="primary" onClick={() => onEditNoteClick(id)}>Edit</Button>
-		<Button variant="contained" color="primary" onClick={() => onRemoveNoteClick(id)}>Remove</Button>
-	</div>
-))
+)(({id, ts, title, onEditNoteClick, onRemoveNoteClick}) => {
+	const classes = useStyles()
+	return (
+		<div>
+			<div className={classes.pb8}>{new Date(ts).toLocaleString()}</div>
+			<div className={classes.pb8}>{title}</div>
+			<IconButton size="small" onClick={() => onEditNoteClick(id)}>
+				<EditIcon fontSize="small" />
+			</IconButton>
+			<IconButton size="small" onClick={() => onRemoveNoteClick(id)}>
+				<DeleteIcon fontSize="small" />
+			</IconButton>
+		</div>
+	)
+})
 
 const LoadNotesView = connect(
 	null,
@@ -373,7 +424,7 @@ const NoteView = connect(
 			<div><TextField variant="outlined" value={title} onChange={e => setTitle(e.target.value)} /></div>
 			<div><TextField variant="outlined" value={text} onChange={e => setText(e.target.value)} /></div>
 			<Button variant="contained" color="primary" onClick={() => onSaveNoteClick({...note, title, text})}>Save</Button>
-			<Button variant="contained" color="primary" onClick={() => onCloseNoteClick()}>Close</Button>
+			<Button variant="outlined" onClick={() => onCloseNoteClick()}>Close</Button>
 		</div>
 	)
 })
@@ -394,29 +445,10 @@ export const NotesPage = connect(
 	}
 )(({wait, error, note, notes_loaded, onNotesPageOpen}) => {
 	useEffect(() => onNotesPageOpen(), [])
-	const theme = createMuiTheme({
-		typography: {
-			"fontFamily": "\"Roboto\", \"Helvetica\", \"Arial\", sans-serif"
-		},
-		overrides: {
-			MuiButton: {
-				root: {
-					margin: "8px",
-				}
-			},
-			MuiOutlinedInput: {
-				root: {
-					margin: "8px"
-				},
-				input: {
-					padding: "8px"
-				}
-			}
-		}
-	})
+	const classes = useStyles()
 	return (
-		<ThemeProvider theme={theme}>
-			<Typography component="div">
+		<ThemeProvider theme={main_theme}>
+			<div className={classes.root}>
 				{wait !== undefined && <WaitView />}
 				{error !== undefined && <ErrorView />}
 				{
@@ -429,7 +461,7 @@ export const NotesPage = connect(
 								<LoadNotesView />
 					)
 				}
-			</Typography>
+			</div>
 		</ThemeProvider>
 	)
 })
