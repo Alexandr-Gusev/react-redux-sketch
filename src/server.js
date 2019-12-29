@@ -1,6 +1,7 @@
 const http = require("http")
 const url = require("url")
 const fs = require("fs")
+const mime = require("C:/Program Files/nodejs/node_modules/npm/node_modules/mime-types")
 
 const port = 3000
 
@@ -18,9 +19,9 @@ let notes = [
 		text: "text 2"
 	}
 ]
-let note_id = 3
+let noteId = 3
 
-const request_handler = (request, response) => {
+const requestHandler = (request, response) => {
 	let body = []
 
 	request.on("data", chunk => {
@@ -30,16 +31,16 @@ const request_handler = (request, response) => {
 	request.on("end", () => {
 		let pathname = url.parse(request.url, true).pathname
 		console.log(pathname)
-		if (pathname === "/load_notes") {
+		if (pathname === "/load-notes") {
 			const res = {error: "", notes: notes}
-			response.writeHead(200)
+			response.writeHead(200, {"Content-Type": "application/json"})
 			response.write(JSON.stringify(res))
 			response.end()
-		} else if (pathname === "/save_note") {
+		} else if (pathname === "/save-note") {
 			let res = {error: "unknown error"}
 			let json = JSON.parse(body)
 			if (!json.id) {
-				json.id = note_id++
+				json.id = noteId++
 				notes.push(json)
 				res.error = ""
 				res.id = json.id
@@ -53,10 +54,10 @@ const request_handler = (request, response) => {
 					res.id = json.id
 				}
 			}
-			response.writeHead(200)
+			response.writeHead(200, {"Content-Type": "application/json"})
 			response.write(JSON.stringify(res))
 			response.end()
-		} else if (pathname === "/remove_note") {
+		} else if (pathname === "/remove-note") {
 			let res = {error: "unknown error"}
 			const json = JSON.parse(body)
 			const i = notes.findIndex(note => note.id === json.id)
@@ -66,7 +67,7 @@ const request_handler = (request, response) => {
 				notes.splice(i, 1)
 				res.error = ""
 			}
-			response.writeHead(200)
+			response.writeHead(200, {"Content-Type": "application/json"})
 			response.write(JSON.stringify(res))
 			response.end()
 		} else {
@@ -75,10 +76,10 @@ const request_handler = (request, response) => {
 			}
 			fs.readFile(__dirname + pathname, (err, content) => {
 				if (err) {
-					response.writeHead(404)
+					response.writeHead(404, {"Content-Type": "text/plain"})
 					response.write("Not Found")
 				} else {
-					response.writeHead(200)
+					response.writeHead(200, {"Content-Type": mime.lookup(pathname) || "text/plain"})
 					response.write(content)
 				}
 				response.end()
@@ -87,5 +88,5 @@ const request_handler = (request, response) => {
 	})
 }
 
-const server = http.createServer(request_handler)
+const server = http.createServer(requestHandler)
 server.listen(port)

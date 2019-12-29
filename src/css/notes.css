@@ -1,0 +1,14 @@
+.notes-list-item {
+	position: relative;
+	padding: 8px 0;
+	border-bottom-width: 1px;
+	border-bottom-color: #E0E0E0;
+	border-bottom-style: solid;
+	width: 400px;
+}
+
+.notes-list-item-controls {
+	position: absolute;
+	right: 0;
+	top: 8px;
+}

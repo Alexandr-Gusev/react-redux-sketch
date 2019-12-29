@@ -1,0 +1,23 @@
+.root {
+	font-family: Roboto, Helvetica, Arial, sans-serif;
+}
+
+.p8 {
+	padding: 8px;
+}
+
+.pt8 {
+	padding-top: 8px;
+}
+
+.pb8 {
+	padding-bottom: 8px;
+}
+
+.pl8 {
+	padding-left: 8px;
+}
+
+.pr8 {
+	padding-right: 8px;
+}
