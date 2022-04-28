@@ -18,7 +18,7 @@
 		"mini-css-extract-plugin": "0.9.0",
 		"clean-webpack-plugin": "^3.0.0",
 		"copy-webpack-plugin": "5.1.0",
-		"cross-fetch": "3.0.4",
+		"cross-fetch": "3.1.5",
 		"@material-ui/core": "4.8.0",
 		"@material-ui/icons": "4.5.1"
 	},
